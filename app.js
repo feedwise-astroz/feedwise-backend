@@ -1,6 +1,7 @@
 const dotenv = require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors");
 const bodyParser = require("body-parser");
 const userRoute = require("./routes/userRoute");
 
@@ -9,7 +10,12 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 app.use(bodyParser.json());
-
+app.use(
+  cors({
+    origin: ["http://localhost:5001", "https://feedwise-backend-test.up.railway.app"],
+    credentials: true,
+  })
+);
 // User Port
 const PORT = process.env.PORT || 5001;
 
