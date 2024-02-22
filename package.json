@@ -1,0 +1,31 @@
+{
+    "name": "feedwise-backend",
+    "version": "1.0.0",
+    "description": "This repository contains the backend codebase for the Feedwise application",
+    "main": "app.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "backend": "nodemon app.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "ajv": "^8.12.0",
+        "ajv-errors": "^3.0.0",
+        "ajv-formats": "^2.1.1",
+        "ajv-keywords": "^5.1.0",
+        "bcryptjs": "^2.4.3",
+        "body-parser": "^1.20.2",
+        "cookie-parser": "^1.4.6",
+        "cors": "^2.8.5",
+        "dotenv": "^16.4.4",
+        "ejs": "^3.1.9",
+        "express": "^4.18.2",
+        "express-async-handler": "^1.2.0",
+        "jsonwebtoken": "^9.0.2",
+        "mongoose": "^8.1.2",
+        "nodemon": "^3.0.3",
+        "validator": "^13.11.0"
+    }
+}
