@@ -6,16 +6,9 @@ require("ajv-formats")(ajv)
 require("ajv-keywords")(ajv, "transform")
 
 
-ajv.addFormat("email", (data) => {
-  // Regular expression for email validation
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(data);
-});
-
-
 ajv.addKeyword({
     keyword: "strongPassword", 
-    type: "string",          
+    type: "string",           
     compile: () => {
         // Return a function that performs validation
         return (data) => {
@@ -30,7 +23,7 @@ ajv.addKeyword({
 
 
 ajv.addKeyword({
-  keyword: "passwordMatch",
+  keyword: "passwordMatch", 
   compile: () => {
     return (data) => {
         if (data.password !== data.confirmPassword) {
@@ -39,17 +32,15 @@ ajv.addKeyword({
         return true;
     };
   },
-  errors: false
+  errors: false 
 });
 
-// Registration schema for validating registration data
-const registrationSchema = {
+// resetPasswordSchema schema for validating registration data
+const resetPasswordSchema = {
   type: "object",
-  required: ["fullname", "email", "password", "confirmPassword"],
+  required: ["password", "confirmPassword"],
   additionalProperties: false,
   properties: {
-    fullname: { type: "string", minLength: 1, maxLength: 20, transform: ["trim"] },
-    email: { type: "string", format: "email", maxLength: 40, transform: ["trim"] },
     password: { type: "string", minLength: 6, strongPassword: true },
     confirmPassword: { type: "string" }
 },
@@ -57,13 +48,10 @@ const registrationSchema = {
   errorMessage: {
     type: "should be an object", 
     required: {
-        fullname: "Please enter fullname",
-        email: "Please enter email",
         password: "Please enter password",
         confirmPassword: "Please confirm password",
     },
     properties: {
-        email: "Invalid email format",
         password: "Password must be at least 6 characters long and contain at least one lowercase letter, one uppercase letter, and one digit",
         confirmPassword: "Passwords do not match",
         
@@ -73,9 +61,9 @@ const registrationSchema = {
   
 };
 
-// Validation function for registration data
-const validateRegistration = ajv.compile(registrationSchema);
+// Validation function for reset password data
+const validateResetPassword = ajv.compile(resetPasswordSchema);
 
 module.exports = {
-  validateRegistration
+    validateResetPassword
 };
