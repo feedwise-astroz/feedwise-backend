@@ -2,11 +2,16 @@ const asyncHandler = require("express-async-handler");
 const { validateRegistration } = require("../validations/registerUserSchema");
 const { validateLogin } = require("../validations/loginUserSchema");
 const User = require("../models/userModel");
+const UserToken = require("../models/userTokenModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const { request } = require("express");
-const crypto =  require("crypto")
-const { validateUpdatePassword } = require("../validations/updatePasswordSchema");
+const crypto = require("crypto");
+const {
+  validateUpdatePassword,
+} = require("../validations/updatePasswordSchema");
+const sendMail = require("../utils/sendMail");
+const { validateResetPassword } = require("../validations/resetPasswordSchema");
 
 // To generate a JWT Token
 const generateToken = (id) => {
@@ -83,7 +88,7 @@ const loginUser = asyncHandler(async (req, res) => {
     if (user && correctPassword) {
       const { _id, fullname, email } = user;
 
-      const token = generateToken({_id});
+      const token = generateToken({ _id });
 
       //  Send cookie
       res.cookie("token", token, {
@@ -114,21 +119,20 @@ const loginUser = asyncHandler(async (req, res) => {
 
 // to get the user profile data
 const userProfile = asyncHandler(async (req, res) => {
-    const user = await User.findById(req.user._id);
+  const user = await User.findById(req.user._id);
 
-    if (user) {
-        const { _id, name, email, photo } = user;
-        res.status(200).json({
-          _id,
-          name,
-          email,
-          photo
-        });
-      } else {
-        res.status(400);
-        throw new Error("User Not Found");
-      }
-
+  if (user) {
+    const { _id, name, email, photo } = user;
+    res.status(200).json({
+      _id,
+      name,
+      email,
+      photo,
+    });
+  } else {
+    res.status(400);
+    throw new Error("User Not Found");
+  }
 });
 
 // To Logout the user
@@ -147,66 +151,153 @@ const logoutUser = asyncHandler(async (req, res) => {
 const userLoginStatus = asyncHandler(async (req, res) => {
   const token = req.cookies.token;
 
-  if(!token){
-    return res.json(false)
+  if (!token) {
+    return res.json(false);
   }
 
   const verifyToken = jwt.verify(token, process.env.JWT_SECRET);
 
-  if(verifyToken){
-    return res.json(true)
+  if (verifyToken) {
+    return res.json(true);
   }
 
-  return res.json(false)
+  return res.json(false);
 
-  res.send("status")
+  res.send("status");
 });
 
 // To update user account
 const userUpdatePassword = asyncHandler(async (req, res) => {
   data = req.body;
-  const {oldPassword, newPassword} = req.body;
+  const { oldPassword, newPassword } = req.body;
   valid = validateUpdatePassword(data);
 
-  if(valid){
+  if (valid) {
     const user = await User.findById(req.user._id);
-    if(!user){
-      res.status(400).send("User not found")
+    if (!user) {
+      res.status(400).send("User not found");
     }
-  
+
     const correctPassword = await bcrypt.compare(oldPassword, user.password);
 
     if (user && correctPassword) {
       user.password = newPassword;
-      await user.save()
-      res.send(200).send("password updated!")
-    }else{
-      res.status(400).send("Please add old and new passwords")
+      await user.save();
+      res.send(200).send("password updated!");
+    } else {
+      res.status(400).send("Please add old and new passwords");
     }
-
-
-
-  }else {
+  } else {
     const errors = validateUpdatePassword.errors;
     const msg = errors.map(({ message }) => message);
     return res.status(400).json({ error: msg });
   }
-  
 
- 
   // res.send("password updated")
 });
 
+// When user clicks on forgot password
 const userForgotPassword = asyncHandler(async (req, res) => {
   const { email } = req.body;
   const user = await User.findOne({ email });
 
   if (!user) {
-    res.status(404).send("email not found")
+    res.status(404).send("email not found");
   }
-  
+
+  let resetTokenExists = await UserToken.findOne({ userId: user._id });
+  if (resetTokenExists) {
+    await UserToken.deleteOne();
+  }
+
   let resetToken = crypto.randomBytes(32).toString("hex") + user._id;
-  res.status(404).send("crypto created")
+
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  await new UserToken({
+    userId: user._id,
+    token: hashedToken,
+    createdAt: Date.now(),
+    expiresAt: Date.now() + 10 * (60 * 1000), // 10 minutes
+  }).save();
+
+  // Construct Reset Url
+  const resetUrl = `${process.env.FRONTEND_URL}/resetPassword/${resetToken}`;
+
+  console.log(user);
+
+  // Reset Email
+  const message = `
+      <h2>Hello ${user.fullname}</h2>
+      <p>A password reset for your account was requested.</p>  
+      <p>Please click the URL below to change your password.</p>
+      <p>Note that this link is valid for 10 minutes. After the time limit has expired, you will have to resubmit the request for a password reset.</p>
+      <a href=${resetUrl} clicktracking=off>${resetUrl}</a>
+
+      <p>If you did not make this request, please contact us at ${process.env.MAIL_USER}.</p>
+      
+      <p>Regards,</p>
+      <p>Feedwise Team</p>
+    `;
+  const subject = "Reset Password";
+  const send_to = user.email;
+  const sent_from = process.env.MAIL_USER;
+
+  try {
+    await sendMail(subject, message, send_to, sent_from);
+    res.status(200).json({ success: true, message: "Reset Email Sent" });
+  } catch (error) {
+    res.status(500).json("Email not sent, please try again");
+  }
 });
 
-module.exports = { registerUser, loginUser, logoutUser, userProfile, userLoginStatus, userUpdatePassword, userForgotPassword };
+// Reset Password
+const resetPassword = asyncHandler(async (req, res) => {
+  data = req.body;
+  const { password } = req.body;
+  valid = validateResetPassword(data);
+  const { resetToken } = req.params;
+
+  if (valid) {
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+
+    const resetTokenDetails = await UserToken.findOne({
+      token: hashedToken,
+      expiresAt: { $gt: Date.now() },
+    });
+
+    if (!resetTokenDetails) {
+      res.status(404);
+      throw new Error("Invalid or Expired Token");
+    }
+
+    // Find user
+    const user = await User.findOne({ _id: resetTokenDetails.userId });
+    user.password = password;
+    await user.save();
+    res.status(200).json({
+      message: "Password Reset Successful, Please Login",
+    });
+  } else {
+    const errors = validateResetPassword.errors;
+    const msg = errors.map(({ message }) => message);
+    return res.status(400).json({ error: msg });
+  }
+});
+
+module.exports = {
+  registerUser,
+  loginUser,
+  logoutUser,
+  userProfile,
+  userLoginStatus,
+  userUpdatePassword,
+  userForgotPassword,
+  resetPassword
+};

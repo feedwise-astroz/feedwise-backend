@@ -1,7 +1,7 @@
 const Ajv = require("ajv");
 
 const ajv = new Ajv({ allErrors: true, coerceTypes: true, useDefaults: "empty" })
-require("ajv-errors")(ajv /*, {singleError: true} */)
+require("ajv-errors")(ajv)
 require("ajv-formats")(ajv)
 require("ajv-keywords")(ajv, "transform")
 
@@ -23,7 +23,7 @@ const loginSchema = {
     password: { type: "string"},
 },
   errorMessage: {
-    type: "should be an object", // will not replace internal "type" error for the property "foo"
+    type: "should be an object", 
     required: {
         email: "Please enter email",
         password: "Please enter password",
@@ -35,7 +35,7 @@ const loginSchema = {
   
 };
 
-// Validation function for registration data
+// Validation function for login data
 const validateLogin = ajv.compile(loginSchema);
 
 module.exports = {
