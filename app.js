@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const userRoute = require("./routes/userRoute");
+const cattleRoute = require("./routes/cattleRoute");
 
 // Start Express
 const app = express();
@@ -35,6 +36,7 @@ mongoose.connect(process.env.MONGO_URI, {
 
 
 app.use("/api/users", userRoute);
+app.use("/api/cattle", cattleRoute);
 // Routes
 app.get('/', (req, res) => {
     res.send('Testing!');

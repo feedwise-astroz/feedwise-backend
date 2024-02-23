@@ -5,7 +5,6 @@ const User = require("../models/userModel");
 const UserToken = require("../models/userTokenModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-const { request } = require("express");
 const crypto = require("crypto");
 const {
   validateUpdatePassword,
@@ -163,7 +162,6 @@ const userLoginStatus = asyncHandler(async (req, res) => {
 
   return res.json(false);
 
-  res.send("status");
 });
 
 // To update user account
@@ -299,5 +297,5 @@ module.exports = {
   userLoginStatus,
   userUpdatePassword,
   userForgotPassword,
-  resetPassword
+  resetPassword,
 };
