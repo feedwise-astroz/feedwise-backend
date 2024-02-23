@@ -67,8 +67,26 @@ const updateCattle = asyncHandler(async (req, res) => {
   }
 });
 
+// To get Cattle data
+const getCattleData = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+
+  try {
+    const cattleDetails = await CattleDetails.findOne({ userId });
+
+    if (!cattleDetails) {
+      return res.status(404).json({ error: "Cattle details not found for this user" });
+    }
+
+    return res.status(200).json({ success: true, data: cattleDetails.animalDetails });
+  } catch (error) {
+    return res.status(500).json(error);
+  }
+});
+
 
 module.exports = {
   addCattle,
   updateCattle,
+  getCattleData,
 };
