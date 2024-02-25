@@ -41,7 +41,8 @@ const addFeedData = asyncHandler(async (req, res) => {
 
       await new FeedDetails({
         userId: user._id,
-        status: "newly active",
+        status: "Newly Active",
+        inStock: "High",
         feedName: feedName,
         animalTypes: animalTypes,
         feedQuantity: feedQuantity,
@@ -80,6 +81,51 @@ const addFeedData = asyncHandler(async (req, res) => {
   }
 });
 
+
+// To get cattle details
+const getFeedData = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+
+  try {
+    // Fetch data from MongoDB, sorting by status and createdAt
+    const feedData = await FeedDetails.find({ userId: userId })
+      .sort({ 
+        status: 1, 
+        createdAt: -1
+      })
+      .exec();
+  
+    if (!feedData) {
+      return res.status(403).json({ error: "Feed data not found for this user" });
+    }
+  
+    // Define custom order for status values
+    const statusOrder = { "newly active": 1, "active": 2, "inactive": 3 };
+  
+    // Custom sorting based on status
+    feedData.sort((a, b) => {
+      return statusOrder[a.status] - statusOrder[b.status];
+    });
+  
+    // Send the sorted data in the response
+    res.status(200).json({ success: true, data: feedData });
+  } catch (error) {
+    // Handle errors
+    res.status(500).json(error);
+  }
+
+});
+
+
+
+
+
+
+
+
+
+
 module.exports = {
   addFeedData,
+  getFeedData,
 };
