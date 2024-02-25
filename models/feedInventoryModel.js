@@ -10,6 +10,10 @@ const feedInventorySchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  inStock: {
+    type: String,
+    required: true
+  },
   feedName: {
     type: String,
     required: true
