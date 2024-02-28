@@ -118,7 +118,7 @@ const getFeedData = asyncHandler(async (req, res) => {
 
 
 
-// To get cattle details
+// To get cattle details by ID
 const getFeedDataByID = asyncHandler(async (req, res) => {
   const userId = req.user._id;
   const feedId = req.params.feedId;
@@ -145,6 +145,31 @@ const getFeedDataByID = asyncHandler(async (req, res) => {
 
 
 
+// To get Active cattle details from active-feedlogs DB
+const getActiveFeedData = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+
+  try {
+    // Fetch data from MongoDB, sorting by status and createdAt
+    const activeFeedData = await ActiveFeedLogModel.find({ userId: userId })
+      .sort({ 
+        feedQuantity: -1, 
+      })
+      .exec();
+  
+    if (!activeFeedData) {
+      return res.status(403).json({ error: "Feed data not found for this user" });
+    }
+  
+    // Send the activeFeedData in the response
+    res.status(200).json({ success: true, data: activeFeedData });
+  } catch (error) {
+    // Handle errors
+    res.status(500).json(error);
+  }
+
+});
+
 
 
 
@@ -152,4 +177,5 @@ module.exports = {
   addFeedData,
   getFeedData,
   getFeedDataByID,
+  getActiveFeedData,
 };
