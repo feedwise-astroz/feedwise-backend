@@ -118,7 +118,30 @@ const getFeedData = asyncHandler(async (req, res) => {
 
 
 
+// To get cattle details
+const getFeedDataByID = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const feedId = req.params.feedId;
 
+  try {
+    // Fetch data from MongoDB, sorting by status and createdAt
+    const feedData = await FeedDetails.findOne({ _id: feedId, userId: userId });
+  
+    if (!feedData) {
+      return res.status(403).json({ error: "Feed details not found" });
+    }
+  
+    // Define custom order for status values
+    const statusOrder = { "newly active": 1, "active": 2, "inactive": 3 };
+  
+    // Custom sorting based on status
+    res.status(200).json({ success: true, data: feedData });
+  } catch (error) {
+    // Handle errors
+    res.status(500).json(error);
+  }
+
+});
 
 
 
@@ -128,4 +151,5 @@ const getFeedData = asyncHandler(async (req, res) => {
 module.exports = {
   addFeedData,
   getFeedData,
+  getFeedDataByID,
 };
