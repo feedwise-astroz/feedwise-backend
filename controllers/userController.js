@@ -28,7 +28,7 @@ const registerUser = asyncHandler(async (req, res) => {
     const userExists = await User.findOne({ email });
 
     if (userExists) {
-      res.send("user already exists");
+      res.status(409).send("User already exists");
     }
 
     const user = await User.create({
@@ -59,7 +59,7 @@ const registerUser = asyncHandler(async (req, res) => {
         token,
       });
     } else {
-      res.send("invalud user data");
+      res.status(400).send("Invalid user data");
     }
   } else {
     const errors = validateRegistration.errors;
@@ -79,7 +79,7 @@ const loginUser = asyncHandler(async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      res.send("This user doesn't have an account, Please do singup!");
+      res.status(404).send("This user doesn't have an account. Please sign up!");
     }
 
     const correctPassword = await bcrypt.compare(password, user.password);
@@ -151,16 +151,16 @@ const userLoginStatus = asyncHandler(async (req, res) => {
   const token = req.cookies.token;
 
   if (!token) {
-    return res.json(false);
+    return res.status(401).json(false);
   }
 
   const verifyToken = jwt.verify(token, process.env.JWT_SECRET);
 
   if (verifyToken) {
-    return res.json(true);
+    return res.status(200).json(true);
   }
 
-  return res.json(false);
+  return res.status(401).json(false);
 
 });
 
