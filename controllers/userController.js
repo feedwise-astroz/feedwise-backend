@@ -45,6 +45,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
       //  Send cookie
       res.cookie("token", token, {
+        httpOnly: true,
         path: "/",
         sameSite: "none",
         maxAge: 86400000, // Setting maxAge to expire the cookie after 24 hours
