@@ -172,10 +172,121 @@ const getActiveFeedData = asyncHandler(async (req, res) => {
 
 
 
+// To get Update cattle details if only active
+const updateActiveFeedDataByID = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const feedId = req.params.feedId;
+  data = req.body;
+  const {
+    feedName,
+    animalTypes,
+    feedQuantity,
+    startDate,
+    vendorName,
+    purchasePrice,
+    purchaseDate,
+    txnID,
+  } = req.body;
+  valid = validateFeedInventory(data);
+
+  if (valid) {
+
+    try {
+      // Check if the feed exists and is active
+      const feedData = await FeedDetails.findOne({ 
+        _id: feedId, 
+        userId: userId, 
+        status: { $in: ["active", "Newly Active"] } 
+    });    
+      if (!feedData) {
+        return res.status(403).json({ error: "Feed details not found or feed is not active" });
+      }
+
+      const updateObj = {};
+  
+      // Update FeedDetails
+      // Update the properties that need to be updated
+      if(feedData.feedQuantity !== feedQuantity){
+        const availbleFeedQuantity = feedData.feedQuantity
+        updateObj.feedQuantity = feedQuantity; // Update as needed
+    
+        // Update ActiveFeedLogModel
+        const activeFeedLog = await ActiveFeedLogModel.findOne({ userId: userId, feedName: feedName });
+    
+        if (!activeFeedLog) {
+          // Handle case where active feed log entry doesn't exist (this should not happen if the logic is consistent)
+          return res.status(404).json({ error: "Active feed log not found" });
+        }
+    
+        const removedOldFeedQuantity  = activeFeedLog.feedQuantity - availbleFeedQuantity
+        activeFeedLog.feedQuantity = removedOldFeedQuantity + feedQuantity; 
+        await activeFeedLog.save();
+      }
+
+      if(feedData.vendorName !== vendorName){
+        updateObj.vendorName = vendorName
+      }
+
+      if(feedData.purchasePrice !== purchasePrice){
+        updateObj.purchasePrice = purchasePrice
+      }
+
+      if(feedData.purchaseDate !== purchaseDate){
+        updateObj.purchaseDate = purchaseDate
+      }
+
+      if(feedData.txnID !== txnID){
+        updateObj.txnID = txnID
+      }
+
+      if(feedData.startDate !== startDate){
+        updateObj.startDate = startDate
+      }
+
+      if(feedData.animalTypes !== animalTypes){
+        updateObj.animalTypes = animalTypes
+
+        const activeFeedLog = await ActiveFeedLogModel.findOne({ userId: userId, feedName: feedName });
+    
+        if (!activeFeedLog) {
+          // Handle case where active feed log entry doesn't exist (this should not happen if the logic is consistent)
+          return res.status(404).json({ error: "Active feed log not found" });
+        }
+
+        activeFeedLog.animalTypes =  animalTypes; // Update as needed
+        await activeFeedLog.save();
+      }
+
+      Object.assign(feedData, updateObj);
+      await feedData.save();
+  
+      res.status(200).json({ success: true, message: "Feed details updated successfully" });
+    } catch (error) {
+      // Handle errors
+      res.status(500).json(error);
+    }
+
+  } else {
+    const errors = validateFeedInventory.errors;
+    const msg = errors.map(({ message }) => message);
+    return res.status(400).json({ error: msg });
+  }
+
+});
+
+
+
 
 module.exports = {
   addFeedData,
   getFeedData,
   getFeedDataByID,
   getActiveFeedData,
+  updateActiveFeedDataByID,
 };
+
+
+
+
+
+
