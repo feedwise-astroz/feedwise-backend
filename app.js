@@ -7,6 +7,7 @@ const cookieParser = require("cookie-parser");
 const userRoute = require("./routes/userRoute");
 const cattleRoute = require("./routes/cattleRoute");
 const feedInventoryRoute = require("./routes/feedInventoryRoute");
+const scheduledTask = require('./utils/feedDeductionScheduler');
 
 // Start Express
 const app = express();

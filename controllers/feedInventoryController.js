@@ -46,6 +46,7 @@ const addFeedData = asyncHandler(async (req, res) => {
         feedName: feedName,
         animalTypes: animalTypes,
         feedQuantity: feedQuantity,
+        remainingFeedQuantity: feedQuantity,
         startDate: startDate,
         vendorName: vendorName,
         purchasePrice: purchasePrice,
