@@ -20,6 +20,7 @@ const feedInventorySchema = {
     feedName: { type: "string" },
     animalTypes: { type: "array", items: { type: "string" } },
     feedQuantity: { type: "number", minimum: 0 },
+    remainingFeedQuantity: { type: "number", minimum: 0 },
     startDate: { type: "string", format: "date-mm-dd-yyyy" }, 
     vendorName: { type: "string" },
     purchasePrice: { type: "number", minimum: 0 },
