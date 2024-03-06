@@ -7,6 +7,7 @@ const cookieParser = require("cookie-parser");
 const userRoute = require("./routes/userRoute");
 const cattleRoute = require("./routes/cattleRoute");
 const feedInventoryRoute = require("./routes/feedInventoryRoute");
+feedNotificationsRoute = require("./routes/feedNotificationsRoute")
 const scheduledTask = require('./utils/feedDeductionScheduler');
 
 // Start Express
@@ -17,7 +18,7 @@ app.use(express.urlencoded({extended: false}));
 app.use(bodyParser.json());
 app.use(
   cors({
-    origin: ["http://localhost:5001", "https://feedwise-dev-backend.up.railway.app", "https://dev--feedwiseapp.netlify.app"],
+    origin: ["http://localhost:5001", "https://feedwise-dev-backend.up.railway.app", "https://dev--feedwiseapp.netlify.app", "https://feedwise-backend-local-local.up.railway.app"],
     credentials: true,
   })
 );
@@ -37,10 +38,13 @@ mongoose.connect(process.env.MONGO_URI, {
 });
 
 
+
+// Routes
 app.use("/api/users", userRoute);
 app.use("/api/cattle", cattleRoute);
 app.use("/api/feedInventory", feedInventoryRoute);
-// Routes
+app.use("/api/notifications", feedNotificationsRoute);
+
 app.get('/', (req, res) => {
     res.send('Testing!');
   });

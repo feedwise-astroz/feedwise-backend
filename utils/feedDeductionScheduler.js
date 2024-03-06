@@ -15,8 +15,6 @@ const task = async () => {
 
     // Iterate over each user
     for (const user of users) {
-      console.log("***************************************");
-      console.log("for the user", user.fullname);
       const activeFeedLogs = await ActiveFeedLogModel.find({ userId: user._id })
         .sort({ feedQuantity: -1 })
         .exec();
@@ -76,15 +74,23 @@ const task = async () => {
               );
               const notificationMessage = `${activeLog.feedName} Inventory is running low in ${daysLeft} days! Take prompt action to manage to manage stock levels`;
               const notification = new Notification({
-                notificationType: "warning",
+                notificationType: "Warning",
                 userId: user._id,
                 message: notificationMessage,
                 daysLeftToEnd: daysLeft,
                 feedName: activeLog.feedName,
                 feedQuantity: activeLog.feedQuantity,
                 inStock: "Low",
+                isRead: "false",
               });
               await notification.save();
+
+              for (const feed of feedInventory) {
+                if (feed.inStock !== "Low") {
+                  feed.inStock = "Low";
+                  await feed.save();
+                }
+              }
             }
           }
 
@@ -112,6 +118,6 @@ const task = async () => {
 };
 
 // Schedule cron job to run every minute
-const scheduledTask = cron.schedule("* * * * *", task);
+const scheduledTask = cron.schedule("*/10 * * * *", task);
 
 module.exports = scheduledTask;

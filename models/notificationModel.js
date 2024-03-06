@@ -23,6 +23,10 @@ const notificationSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  isRead:{
+    type: String,
+    required: true
+  },
   daysLeftToEnd:{
     type: String
   },
