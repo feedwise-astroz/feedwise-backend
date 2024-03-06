@@ -4,6 +4,7 @@ const ActiveFeedLogModel = require("../models/activeFeedLogModel");
 const jwt = require("jsonwebtoken");
 const User = require("../models/userModel");
 const { validateFeedInventory } = require("../validations/feedInventorySchema");
+const Notification = require("../models/notificationModel");
 
 // To add cattle details
 const addFeedData = asyncHandler(async (req, res) => {
@@ -70,6 +71,25 @@ const addFeedData = asyncHandler(async (req, res) => {
         await activeFeedLog.save();
       }
 
+      console.log(
+        `Sending notification to ${user.fullname} --- successfully added ${feedName}.`
+      );
+
+      const currentDate = new Date();
+      const formattedDate = currentDate.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+
+      const notificationMessage = `New Item added into the Inventory on ${formattedDate}`;
+      const notification = new Notification({
+        notificationType: "Successful",
+        userId: user._id,
+        message: notificationMessage,
+        feedName: feedName,
+        feedQuantity: feedQuantity,
+        inStock: "High",
+        isRead: "false",
+      });
+      await notification.save();
+
       res.status(200).json({ success: true, message: "FeedDetails saved" });
     } catch (error) {
       res.status(500).json(error);
@@ -119,7 +139,7 @@ const getFeedData = asyncHandler(async (req, res) => {
 
 
 
-// To get cattle details by ID
+// To get feed details by ID
 const getFeedDataByID = asyncHandler(async (req, res) => {
   const userId = req.user._id;
   const feedId = req.params.feedId;
@@ -146,7 +166,7 @@ const getFeedDataByID = asyncHandler(async (req, res) => {
 
 
 
-// To get Active cattle details from active-feedlogs DB
+// To get Active feed details from active-feedlogs DB
 const getActiveFeedData = asyncHandler(async (req, res) => {
   const userId = req.user._id;
 
@@ -173,7 +193,7 @@ const getActiveFeedData = asyncHandler(async (req, res) => {
 
 
 
-// To get Update cattle details if only active
+// To get Update feed details if only active
 const updateActiveFeedDataByID = asyncHandler(async (req, res) => {
   const userId = req.user._id;
   const feedId = req.params.feedId;
