@@ -118,6 +118,6 @@ const task = async () => {
 };
 
 // Schedule cron job to run every minute
-const scheduledTask = cron.schedule("* * * * *", task);
+const scheduledTask = cron.schedule("*/10 * * * *", task);
 
 module.exports = scheduledTask;
