@@ -5,7 +5,7 @@ const { getNotificationByID, getNotifications, getNotificationsCount } = require
 const router = express.Router();
 
 router.get("/notificationsCount",AuthVerify, getNotificationsCount);
-router.get("/notifications", AuthVerify, getNotifications);
-router.get("/notifications/:notificationID", AuthVerify, getNotificationByID);
+router.get("/", AuthVerify, getNotifications);
+router.get("/:notificationID", AuthVerify, getNotificationByID);
 
 module.exports = router;
