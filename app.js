@@ -18,7 +18,7 @@ app.use(express.urlencoded({extended: false}));
 app.use(bodyParser.json());
 app.use(
   cors({
-    origin: ["http://localhost:5001", "https://feedwise-dev-backend.up.railway.app", "https://dev--feedwiseapp.netlify.app", "https://feedwise-backend-local-local.up.railway.app"],
+    origin: ["https://feedwiseapp.com", "http://localhost:5001", "https://feedwise-dev-backend.up.railway.app", "https://dev--feedwiseapp.netlify.app", "https://feedwise-backend-local-local.up.railway.app"],
     credentials: true,
   })
 );
