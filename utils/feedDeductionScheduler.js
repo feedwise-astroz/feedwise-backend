@@ -99,11 +99,13 @@ const task = async () => {
               remainingFeed -= feed.remainingFeedQuantity;
               feed.remainingFeedQuantity = 0;
               feed.status = "inactive";
+              feed.inStock = "Finished"
               await feed.save();
             } else {
               feed.remainingFeedQuantity -= remainingFeed;
               if (feed.remainingFeedQuantity === 0) {
                 feed.status = "inactive";
+                feed.inStock = "Finished"
               }
               await feed.save();
               break;
