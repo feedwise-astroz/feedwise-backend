@@ -48,7 +48,7 @@ const task = async () => {
 
           let remainingFeed = totalFeed;
 
-          if (remainingFeed > activeLog.feedQuantity) {
+          if (remainingFeed >= activeLog.feedQuantity) {
             activeLog.feedQuantity = 0;
             await activeLog.save();
 
@@ -86,7 +86,7 @@ const task = async () => {
               await notification.save();
 
               for (const feed of feedInventory) {
-                if (feed.inStock !== "Low") {
+                if (feed.inStock == "High") {
                   feed.inStock = "Low";
                   await feed.save();
                 }
@@ -95,7 +95,7 @@ const task = async () => {
           }
 
           for (const feed of feedInventory) {
-            if (remainingFeed > feed.remainingFeedQuantity) {
+            if (remainingFeed >= feed.remainingFeedQuantity) {
               remainingFeed -= feed.remainingFeedQuantity;
               feed.remainingFeedQuantity = 0;
               feed.status = "inactive";
@@ -103,7 +103,7 @@ const task = async () => {
               await feed.save();
             } else {
               feed.remainingFeedQuantity -= remainingFeed;
-              if (feed.remainingFeedQuantity === 0) {
+              if (!feed.remainingFeedQuantity) {
                 feed.status = "inactive";
                 feed.inStock = "Finished"
               }
